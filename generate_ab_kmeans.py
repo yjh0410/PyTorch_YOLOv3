@@ -161,15 +161,14 @@ if __name__ == "__main__":
 
     n_anchors = args.num_anchorbox
     size = args.input_size
-    dataset = args.dataset
     
     loss_convergence = 1e-6
     iters_n = 1000
 
-    if dataset == 'voc':
+    if args.dataset == 'voc':
         dataset = VOCDetection(root=VOC_ROOT, transform=BaseTransform([size, size]))
 
-    elif dataset == 'coco':
+    elif args.dataset == 'coco':
         dataset = COCODataset(
                     data_dir=coco_root,
                     img_size=size,
@@ -182,15 +181,15 @@ if __name__ == "__main__":
         if i % 5000 == 0:
             print('Loading datat [%d / %d]' % (i+1, len(dataset)))
 
-        if dataset== 'coco':
+        if args.dataset == 'coco':
             # For COCO
             img, _ = dataset.pull_image(i)
             w, h = img.shape[1], img.shape[0]
             annotation = dataset.pull_anno(i)
 
-        elif dataset == 'voc':
+        elif args.dataset == 'voc':
             # For VOC
-            img = dataset.pull_image(i)
+            img, _ = dataset.pull_image(i)
             w, h = img.shape[1], img.shape[0]
             _, annotation = dataset.pull_anno(i)
 
