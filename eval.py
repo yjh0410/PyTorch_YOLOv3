@@ -6,9 +6,9 @@ from utils.vocapi_evaluator import VOCAPIEvaluator
 from utils.cocoapi_evaluator import COCOAPIEvaluator
 
 
-parser = argparse.ArgumentParser(description='YOLOv3Spp Detector Evaluation')
-parser.add_argument('-v', '--version', default='yolov3spp',
-                    help='yolov3spp.')
+parser = argparse.ArgumentParser(description='YOLOv3 Detector Evaluation')
+parser.add_argument('-v', '--version', default='yolov3',
+                    help='yolov3.')
 parser.add_argument('-d', '--dataset', default='voc',
                     help='voc, coco-val, coco-test.')
 parser.add_argument('--trained_model', type=str,
@@ -89,10 +89,10 @@ if __name__ == '__main__':
     input_size = args.input_size
 
     # load net
-    if args.version == 'yolov3spp':
-        from models.yolov3spp import YOLOv3Spp
+    if args.version == 'yolov3':
+        from models.yolov3 import YOLOv3
         anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
-        net = YOLOv3Spp(device=device, 
+        net = YOLOv3(device=device, 
                         input_size=input_size, 
                         num_classes=num_classes, 
                         anchor_size=anchor_size

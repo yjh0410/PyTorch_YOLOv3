@@ -10,9 +10,9 @@ import tools
 import time
 
 
-parser = argparse.ArgumentParser(description='YOLOv3Spp Detection')
-parser.add_argument('-v', '--version', default='yolov3spp',
-                    help='yolov3spp')
+parser = argparse.ArgumentParser(description='YOLOv3 Detection')
+parser.add_argument('-v', '--version', default='yolov3',
+                    help='yolov3')
 parser.add_argument('-d', '--dataset', default='voc',
                     help='voc, coco-val.')
 parser.add_argument('-size', '--input_size', default=416, type=int,
@@ -60,7 +60,10 @@ def vis(img, bboxes, scores, cls_inds, thresh, class_colors, class_names, class_
 
 def test(net, device, testset, transform, thresh, class_colors=None, class_names=None, class_indexs=None, dataset='voc'):
     num_images = len(testset)
-    for index in range(num_images):
+    save_path = os.path.join('vis_test/' + dataset)
+    os.makedirs(save_path, exist_ok=True)
+
+    for index in range(0, 80):
         print('Testing image {:d}/{:d}....'.format(index+1, num_images))
         img, _ = testset.pull_image(index)
         h, w, _ = img.shape
@@ -80,10 +83,10 @@ def test(net, device, testset, transform, thresh, class_colors=None, class_names
         bboxes *= scale
 
         img_processed = vis(img, bboxes, scores, cls_inds, thresh, class_colors, class_names, class_indexs, dataset)
-        cv2.imshow('detection', img_processed)
-        cv2.waitKey(0)
-        # print('Saving the' + str(index) + '-th image ...')
-        # cv2.imwrite('test_images/' + args.dataset+ '3/' + str(index).zfill(6) +'.jpg', img)
+        # cv2.imshow('detection', img_processed)
+        # cv2.waitKey(0)
+        print('Saving the' + str(index) + '-th image ...')
+        cv2.imwrite(os.path.join(save_path, str(index).zfill(6) +'.jpg'), img)
 
 
 if __name__ == '__main__':
@@ -119,10 +122,10 @@ if __name__ == '__main__':
     class_colors = [(np.random.randint(255),np.random.randint(255),np.random.randint(255)) for _ in range(num_classes)]
 
     # load net
-    if args.version == 'yolov3spp':
-        from models.yolov3spp import YOLOv3Spp
+    if args.version == 'yolov3':
+        from models.yolov3 import YOLOv3
         anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
-        net = YOLOv3Spp(device=device, 
+        net = YOLOv3(device=device, 
                         input_size=input_size, 
                         num_classes=num_classes, 
                         conf_thresh=args.conf_thresh, 

@@ -229,26 +229,29 @@ def iou_score(bboxes_a, bboxes_b):
     return area_i / (area_a + area_b - area_i)
 
     
-def loss(pred_conf, pred_cls, pred_txtytwth, label, num_classes):
+def loss(pred_conf, pred_cls, pred_txtytwth, pred_iou, label, num_classes):
     # create loss func
     conf_loss_function = MSELoss(reduction='mean')
     cls_loss_function = nn.CrossEntropyLoss(reduction='none')
     txty_loss_function = nn.BCEWithLogitsLoss(reduction='none')
     twth_loss_function = nn.MSELoss(reduction='none')
+    iou_loss_function = nn.SmoothL1Loss(reduction='none')
 
     # pred
     pred_conf = pred_conf[:, :, 0]
     pred_cls = pred_cls.permute(0, 2, 1)
     pred_txty = pred_txtytwth[:, :, :2]
     pred_twth = pred_txtytwth[:, :, 2:]
+    pred_iou = pred_iou[:, :, 0]
 
     # gt  
-    gt_conf = label[:, :, 0].float()
-    gt_obj = label[:, :, 1].float()
+    gt_conf = label[:, :, 0]
+    gt_obj = label[:, :, 1]
     gt_cls = label[:, :, 2].long()
-    gt_txty = label[:, :, 3:5].float()
-    gt_twth = label[:, :, 5:7].float()
-    gt_box_scale_weight = label[:, :, 7].float()
+    gt_txty = label[:, :, 3:5]
+    gt_twth = label[:, :, 5:7]
+    gt_box_scale_weight = label[:, :, 7]
+    gt_iou = (gt_box_scale_weight > 0.).float()
     gt_mask = (gt_box_scale_weight > 0.).float()
 
     batch_size = pred_conf.size(0)
@@ -263,7 +266,10 @@ def loss(pred_conf, pred_cls, pred_txtytwth, label, num_classes):
     twth_loss = torch.sum(torch.sum(twth_loss_function(pred_twth, gt_twth), dim=-1) * gt_box_scale_weight * gt_mask) / batch_size
     bbox_loss = txty_loss + twth_loss
 
-    return conf_loss, cls_loss, bbox_loss
+    # iou loss
+    iou_loss = torch.sum(iou_loss_function(pred_iou, gt_iou) * gt_mask) / batch_size
+
+    return conf_loss, cls_loss, bbox_loss, iou_loss
 
 
 if __name__ == "__main__":

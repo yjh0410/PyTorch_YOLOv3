@@ -13,10 +13,10 @@ import time
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='YOLOv3Spp Demo Detection')
+    parser = argparse.ArgumentParser(description='YOLOv3 Demo Detection')
 
-    parser.add_argument('-v', '--version', default='yolov3spp',
-                        help='yolov3spp.')
+    parser.add_argument('-v', '--version', default='yolov3',
+                        help='yolov3.')
     parser.add_argument('--trained_model', default='weights/',
                         type=str, help='Trained state_dict file path to open')
     parser.add_argument('--mode', default='image',
@@ -190,10 +190,10 @@ def run():
     input_size = args.input_size
 
     # load net
-    if args.version == 'yolov3spp':
-        from models.yolov3spp import YOLOv3Spp
+    if args.version == 'yolov3':
+        from models.yolov3 import YOLOv3
         anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
-        net = YOLOv3Spp(device=device, 
+        net = YOLOv3(device=device, 
                         input_size=input_size, 
                         num_classes=num_classes, 
                         conf_thresh=args.conf_thresh, 

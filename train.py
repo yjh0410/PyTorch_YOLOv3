@@ -19,9 +19,9 @@ from utils.cocoapi_evaluator import COCOAPIEvaluator
 from utils.vocapi_evaluator import VOCAPIEvaluator
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='yolov3spp Detection')
-    parser.add_argument('-v', '--version', default='yolov3spp',
-                        help='yolov3spp')
+    parser = argparse.ArgumentParser(description='YOLOv3 Detection')
+    parser.add_argument('-v', '--version', default='yolov3',
+                        help='yolov3')
     parser.add_argument('-d', '--dataset', default='voc',
                         help='voc or coco')
     parser.add_argument('-ms', '--multi_scale', action='store_true', default=False,
@@ -148,16 +148,16 @@ def train():
                     )
 
     # build model
-    if args.version == 'yolov3spp':
-        from models.yolov3spp import YOLOv3Spp
+    if args.version == 'yolov3':
+        from models.yolov3 import YOLOv3
         anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
-        yolo_net = YOLOv3Spp(device=device, 
+        yolo_net = YOLOv3(device=device, 
                              input_size=train_size, 
                              num_classes=num_classes, 
                              trainable=True, 
                              anchor_size=anchor_size
                             )
-        print('Let us train yolov3spp on the %s dataset ......' % (args.dataset))
+        print('Let us train yolov3 on the %s dataset ......' % (args.dataset))
 
     else:
         print('Unknown version !!!')
@@ -207,8 +207,8 @@ def train():
             # WarmUp strategy for learning rate
             if not args.no_warm_up:
                 if epoch < args.wp_epoch:
-                    tmp_lr = base_lr * pow((iter_i+epoch*epoch_size)*1. / (args.wp_epoch*epoch_size), 4)
-                    # tmp_lr = 1e-6 + (base_lr-1e-6) * (iter_i+epoch*epoch_size) / (epoch_size * (args.wp_epoch))
+                    # tmp_lr = base_lr * pow((iter_i+epoch*epoch_size)*1. / (args.wp_epoch*epoch_size), 4)
+                    tmp_lr = 1e-6 + (base_lr-1e-6) * (iter_i+epoch*epoch_size) / (epoch_size * (args.wp_epoch))
                     set_lr(optimizer, tmp_lr)
 
                 elif epoch == args.wp_epoch and iter_i == 0:
@@ -237,10 +237,10 @@ def train():
             targets = targets.to(device)
 
             # forward and loss
-            conf_loss, cls_loss, bbox_loss = model(images, target=targets)
+            conf_loss, cls_loss, bbox_loss, iou_loss = model(images, target=targets)
 
             # total loss
-            total_loss = conf_loss + cls_loss + bbox_loss
+            total_loss = conf_loss + cls_loss + bbox_loss # + iou_loss
 
             # backprop
             total_loss.backward()        
@@ -254,12 +254,19 @@ def train():
                     writer.add_scalar('obj loss',  conf_loss.item(), iter_i + epoch * epoch_size)
                     writer.add_scalar('cls loss',  cls_loss.item(),  iter_i + epoch * epoch_size)
                     writer.add_scalar('bbox loss', bbox_loss.item(), iter_i + epoch * epoch_size)
+                    writer.add_scalar('iou loss',  iou_loss.item(),  iter_i + epoch * epoch_size)
                 
                 t1 = time.time()
                 print('[Epoch %d/%d][Iter %d/%d][lr %.6f]'
-                    '[Loss: obj %.2f || cls %.2f || bbox %.2f || total %.2f || size %d || time: %.2f]'
+                    '[Loss: obj %.2f || cls %.2f || bbox %.2f || iou %.2f || total %.2f || size %d || time: %.2f]'
                         % (epoch+1, max_epoch, iter_i, epoch_size, tmp_lr,
-                            conf_loss.item(), cls_loss.item(), bbox_loss.item(), total_loss.item(), train_size, t1-t0),
+                            conf_loss.item(), 
+                            cls_loss.item(), 
+                            bbox_loss.item(), 
+                            iou_loss.item(),
+                            total_loss.item(), 
+                            train_size, 
+                            t1-t0),
                         flush=True)
 
                 t0 = time.time()
