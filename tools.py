@@ -93,8 +93,7 @@ def set_anchors(anchor_size):
 
 
 def multi_gt_creator(input_size, strides, label_lists, anchor_size):
-    """creator multi scales gt"""
-    # prepare the all empty gt datas
+    """制作训练正样本"""
     batch_size = len(label_lists)
     h = w = input_size
     num_scale = len(strides)
@@ -111,40 +110,41 @@ def multi_gt_creator(input_size, strides, label_lists, anchor_size):
             # get a bbox coords
             gt_class = int(gt_label[-1])
             xmin, ymin, xmax, ymax = gt_label[:-1]
-            # compute the center, width and height
+            # 计算真实框的中心点和宽高
             c_x = (xmax + xmin) / 2 * w
             c_y = (ymax + ymin) / 2 * h
             box_w = (xmax - xmin) * w
             box_h = (ymax - ymin) * h
 
+            # 检查数据
             if box_w < 1. or box_h < 1.:
                 # print('A dirty data !!!')
                 continue    
 
-            # compute the IoU
+            # 计算先验框和边界框之间的IoU
             anchor_boxes = set_anchors(all_anchor_size)
             gt_box = np.array([[0, 0, box_w, box_h]])
             iou = compute_iou(anchor_boxes, gt_box)
 
-            # We only consider those anchor boxes whose IoU is more than ignore thresh,
+            # 阈值筛选
             iou_mask = (iou > ignore_thresh)
 
             if iou_mask.sum() == 0:
-                # We assign the anchor box with highest IoU score.
+                # 若所有的IoU都小于ignore，则将IoU最大的先验框分配给真实框，其他均视为负样本
                 index = np.argmax(iou)
-                # s_indx, ab_ind = index // num_scale, index % num_scale
+                # 确定该正样本被分配到哪个尺度上去，以及哪个先验框被选中为正样本
                 s_indx = index // anchor_number
                 ab_ind = index - s_indx * anchor_number
-                # get the corresponding stride
+                # 获得该尺度的降采样倍数
                 s = strides[s_indx]
-                # get the corresponding anchor box
+                # 获得该先验框的参数
                 p_w, p_h = anchor_boxes[index, 2], anchor_boxes[index, 3]
-                # compute the gride cell location
+                # 计算中心点所在的网格坐标
                 c_x_s = c_x / s
                 c_y_s = c_y / s
                 grid_x = int(c_x_s)
                 grid_y = int(c_y_s)
-                # compute gt labels
+                # 制作学习标签
                 tx = c_x_s - grid_x
                 ty = c_y_s - grid_y
                 tw = np.log(box_w / p_w)
@@ -159,29 +159,27 @@ def multi_gt_creator(input_size, strides, label_lists, anchor_size):
                     gt_tensor[s_indx][batch_index, grid_y, grid_x, ab_ind, 7:] = np.array([xmin, ymin, xmax, ymax])
             
             else:
-                # There are more than one anchor boxes whose IoU are higher than ignore thresh.
-                # But we only assign only one anchor box whose IoU is the best(objectness target is 1) and ignore other 
-                # anchor boxes whose(we set their objectness as -1 which means we will ignore them during computing obj loss )
-                # iou_ = iou * iou_mask
+                # 至少有一个IoU大于ignore
                 
-                # We get the index of the best IoU
+                # 我们只保留IoU最大的作为正样本，
+                # 其余的要么被忽略，要么视为负样本
                 best_index = np.argmax(iou)
                 for index, iou_m in enumerate(iou_mask):
                     if iou_m:
                         if index == best_index:
-                            # s_indx, ab_ind = index // num_scale, index % num_scale
+                            # 确定该正样本被分配到哪个尺度上去，以及哪个先验框被选中为正样本
                             s_indx = index // anchor_number
                             ab_ind = index - s_indx * anchor_number
-                            # get the corresponding stride
+                            # 获得该尺度的降采样倍数
                             s = strides[s_indx]
-                            # get the corresponding anchor box
+                            # 获得该先验框的参数
                             p_w, p_h = anchor_boxes[index, 2], anchor_boxes[index, 3]
-                            # compute the gride cell location
+                            # 计算中心点所在的网格坐标
                             c_x_s = c_x / s
                             c_y_s = c_y / s
                             grid_x = int(c_x_s)
                             grid_y = int(c_y_s)
-                            # compute gt labels
+                            # 制作学习标签
                             tx = c_x_s - grid_x
                             ty = c_y_s - grid_y
                             tw = np.log(box_w / p_w)
@@ -196,8 +194,8 @@ def multi_gt_creator(input_size, strides, label_lists, anchor_size):
                                 gt_tensor[s_indx][batch_index, grid_y, grid_x, ab_ind, 7:] = np.array([xmin, ymin, xmax, ymax])
             
                         else:
-                            # we ignore other anchor boxes even if their iou scores are higher than ignore thresh
-                            # s_indx, ab_ind = index // num_scale, index % num_scale
+                            # 这些先验框即便IoU大于ignore，但由于不是最大的
+                            # 故被忽略掉
                             s_indx = index // anchor_number
                             ab_ind = index - s_indx * anchor_number
                             s = strides[s_indx]

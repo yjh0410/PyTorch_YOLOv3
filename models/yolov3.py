@@ -21,7 +21,7 @@ class YOLOv3(nn.Module):
 
         self.grid_cell, self.stride_tensor, self.all_anchors_wh = self.create_grid(input_size)
 
-        # backbone darknet-53
+        # 主干网络 darknet-53
         self.backbone = darknet53(pretrained=trainable, hr=hr)
         
         # s = 32
