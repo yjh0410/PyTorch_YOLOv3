@@ -1,5 +1,15 @@
 # PyTorch_YOLOv3
 
+## DarkNet53预训练模型
+
+大家可以从下面的百度网盘链接来下载已训练好的DarkNet53预模型：
+
+链接: https://pan.baidu.com/s/1NmdqPwAmirknO5J__lg5Yw 
+
+提起码: hlt6 
+
+进入网盘中后，请点开网盘中的```backbone/darknet53/```文件夹，可以找到我们的DarkNet53预训练模型，包括```darknet53_75.42.pth```和```darknet53_hr_77.76.pth```文件，前者是在224图像上训练的，后者是经过448图像微调过的，即YOLOv2中的hi-res classifier训练技巧。
+
 ## 数据集
 
 ### VOC2007与VOC2012数据集
@@ -49,3 +59,5 @@
 链接: https://pan.baidu.com/s/1NmdqPwAmirknO5J__lg5Yw 
 
 提起码: hlt6 
+
+进入网盘中后，请点开网盘中的```weights/```文件夹，可以找到我们已训练好的模型权重。
