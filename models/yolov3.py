@@ -39,18 +39,17 @@ class YOLOv3(nn.Module):
         # 主干网络
         self.backbone, feat_dims = build_backbone(cfg['backbone'], cfg['pretrained'])
         
-        # s = 32
-        self.conv_set_3 = nn.Sequential(
-            Conv(feat_dims[-1], feat_dims[-1]//2, k=1),
-            Conv(feat_dims[-1]//2, feat_dims[-1], k=3, p=1),
-            Conv(feat_dims[-1], feat_dims[-1]//2, k=1),
-            Conv(feat_dims[-1]//2, feat_dims[-1], k=3, p=1),
-            Conv(feat_dims[-1], feat_dims[-1]//2, k=1)
+        # s = 8
+        self.conv_set_1 = nn.Sequential(
+            Conv(feat_dims[-3]+feat_dims[-2]//4, feat_dims[-3]//2, k=1),
+            Conv(feat_dims[-3]//2, feat_dims[-3], k=3, p=1),
+            Conv(feat_dims[-3], feat_dims[-3]//2, k=1),
+            Conv(feat_dims[-3]//2, feat_dims[-3], k=3, p=1),
+            Conv(feat_dims[-3], feat_dims[-3]//2, k=1)
         )
-        self.conv_1x1_3 = Conv(feat_dims[-1]//2, feat_dims[-1]//4, k=1)
-        self.extra_conv_3 = Conv(feat_dims[-1]//2, cfg['head_dim'][-1], k=3, p=1)
-        self.pred_3 = nn.Conv2d(cfg['head_dim'][-1], self.num_anchors*(1 + 4 + self.num_classes), kernel_size=1)
-
+        self.extra_conv_1 = Conv(feat_dims[-3]//2, cfg['head_dim'][-3], k=3, p=1)
+        self.pred_1 = nn.Conv2d(cfg['head_dim'][-3], self.num_anchors*(1 + 4 + self.num_classes), kernel_size=1)
+    
         # s = 16
         self.conv_set_2 = nn.Sequential(
             Conv(feat_dims[-2]+feat_dims[-1]//4, feat_dims[-2]//2, k=1),
@@ -63,17 +62,18 @@ class YOLOv3(nn.Module):
         self.extra_conv_2 = Conv(feat_dims[-2]//2, cfg['head_dim'][-2], k=3, p=1)
         self.pred_2 = nn.Conv2d(cfg['head_dim'][-2], self.num_anchors*(1 + 4 + self.num_classes), kernel_size=1)
 
-        # s = 8
-        self.conv_set_1 = nn.Sequential(
-            Conv(feat_dims[-3]+feat_dims[-2]//4, feat_dims[-3]//2, k=1),
-            Conv(feat_dims[-3]//2, feat_dims[-3], k=3, p=1),
-            Conv(feat_dims[-3], feat_dims[-3]//2, k=1),
-            Conv(feat_dims[-3]//2, feat_dims[-3], k=3, p=1),
-            Conv(feat_dims[-3], feat_dims[-3]//2, k=1)
+        # s = 32
+        self.conv_set_3 = nn.Sequential(
+            Conv(feat_dims[-1], feat_dims[-1]//2, k=1),
+            Conv(feat_dims[-1]//2, feat_dims[-1], k=3, p=1),
+            Conv(feat_dims[-1], feat_dims[-1]//2, k=1),
+            Conv(feat_dims[-1]//2, feat_dims[-1], k=3, p=1),
+            Conv(feat_dims[-1], feat_dims[-1]//2, k=1)
         )
-        self.extra_conv_1 = Conv(feat_dims[-3]//2, cfg['head_dim'][-3], k=3, p=1)
-        self.pred_1 = nn.Conv2d(cfg['head_dim'][-3], self.num_anchors*(1 + 4 + self.num_classes), kernel_size=1)
-    
+        self.conv_1x1_3 = Conv(feat_dims[-1]//2, feat_dims[-1]//4, k=1)
+        self.extra_conv_3 = Conv(feat_dims[-1]//2, cfg['head_dim'][-1], k=3, p=1)
+        self.pred_3 = nn.Conv2d(cfg['head_dim'][-1], self.num_anchors*(1 + 4 + self.num_classes), kernel_size=1)
+
 
         if self.trainable:
             self.init_bias()
