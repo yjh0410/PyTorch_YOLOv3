@@ -195,7 +195,7 @@ class YOLOv3(nn.Module):
         for level, (conf_pred_i, cls_pred_i, reg_pred_i, anchors_i) \
                 in enumerate(zip(conf_preds, cls_preds, reg_preds, anchors)):
             # (H x W x KA x C,)
-            scores_i = (torch.sigmoid(conf_pred_i) * torch.softmax(cls_pred_i, dim=-1)).flatten()
+            scores_i = torch.sqrt(torch.sigmoid(conf_pred_i) * torch.softmax(cls_pred_i, dim=-1)).flatten()
 
             # Keep top k top scoring indices only.
             num_topk = min(self.topk, reg_pred_i.size(0))
