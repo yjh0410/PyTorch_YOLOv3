@@ -1,3 +1,4 @@
+
 # PyTorch_YOLOv3
 这个YOLOv3项目是配合我在知乎专栏上连载的《YOLO入门教程》而创建的：
 
@@ -13,15 +14,24 @@ https://zhuanlan.zhihu.com/c_1364967262269693952
 
 https://github.com/yjh0410/PyTorch_YOLO-Family
 
-## DarkNet53预训练模型
+# 配置环境
+- 我们建议使用anaconda来创建虚拟环境:
+```Shell
+conda create -n yolo python=3.6
+```
 
-大家可以从下面的百度网盘链接来下载已训练好的DarkNet53预模型：
+- 然后，激活虚拟环境:
+```Shell
+conda activate yolo
+```
 
-链接: https://pan.baidu.com/s/1NmdqPwAmirknO5J__lg5Yw 
+- 配置环境:
+运行下方的命令即可一键配置相关的深度学习环境：
+```Shell
+pip install -r requirements.txt 
+```
+如果您已经学习了笔者之前的YOLOv1或YOLOv2项目，那么就不需要再次创建该虚拟环境了，二者的环境是可以共用的。
 
-提起码: hlt6 
-
-进入网盘中后，请点开网盘中的```backbone/darknet53/```文件夹，可以找到我们的DarkNet53预训练模型，包括```darknet53_75.42.pth```和```darknet53_hr_77.76.pth```文件，前者是在224图像上训练的，后者是经过448图像微调过的，即YOLOv2中的hi-res classifier训练技巧。
 
 ## 数据集
 
@@ -29,48 +39,78 @@ https://github.com/yjh0410/PyTorch_YOLO-Family
 
 读者可以从下面的百度网盘链接来下载VOC2007和VOC2012数据集
 
-链接：https://pan.baidu.com/s/1tYPGCYGyC0wjpC97H-zzMQ 
+链接：https://pan.baidu.com/s/1qClcQXSXjP8FEnsP_RrZjg 
 
-提取码：4la9
+提取码：zrcj 
 
 读者会获得 ```VOCdevkit.zip```压缩包, 分别包含 ```VOCdevkit/VOC2007``` 和 ```VOCdevkit/VOC2012```两个文件夹，分别是VOC2007数据集和VOC2012数据集.
 
 ### COCO 2017 数据集
 
+* 自己下载
+
 运行 ```sh data/scripts/COCO2017.sh```，将会获得 COCO train2017, val2017, test2017三个数据集.
 
+* 百度网盘下载：
+
+这里，笔者也提供了由笔者下好的COCO数据集的百度网盘链接：
+
+链接：https://pan.baidu.com/s/1XQqeHgNMp8U-ohbEWuT2CA 
+
+提取码：l1e5
+
 ## 实验结果
+VOC2007 test 测试集
 
-官方的YOLOv3:
+| Model             |  Input size  |   mAP   | Weight |
+|-------------------|--------------|---------|--------|
+| YOLOv3            |  320×320     |   73.4  |    -   |
+| YOLOv3            |  416×416     |   77.1  |    -   |
+| YOLOv3            |  512×512     |   78.0  |    -   |
+| YOLOv3            |  608×608     |   78.3  | [github](https://github.com/yjh0410/PyTorch_YOLOv3/releases/download/yolov3_weight/yolov3_voc.pth) |
 
-<table><tbody>
-<tr><th align="left" bgcolor=#f8f8f8> 模型 </th>     <td bgcolor=white> 输入尺寸 </td><td bgcolor=white> AP </td><td bgcolor=white> AP50 </td><td bgcolor=white> AP75 </td><td bgcolor=white> AP_S </td><td bgcolor=white> AP_M </td><td bgcolor=white> AP_L </td></tr>
 
-<tr><th align="left" bgcolor=#f8f8f8> YOLOv3</th><td bgcolor=white> 320 </td><td bgcolor=white> 28.2 </td><td bgcolor=white> 51.5 </td><td bgcolor=white> - </td><td bgcolor=white> - </td><td bgcolor=white> - </td><td bgcolor=white> - </td></tr>
+COCO val 验证集
 
-<tr><th align="left" bgcolor=#f8f8f8> YOLOv3</th><td bgcolor=white> 416 </td><td bgcolor=white> 31.0 </td><td bgcolor=white> 55.3 </td><td bgcolor=white> - </td><td bgcolor=white> - </td><td bgcolor=white> - </td><td bgcolor=white> - </td></tr>
+| Model             |  Input size    |   AP    |   AP50    | Weight|
+|-------------------|----------------|---------|-----------|-------|
+| YOLOv3            |  320×320       |  24.1   |   42.8    |   -   |
+| YOLOv3            |  416×416       |  27.2   |   47.3    |   -   |
+| YOLOv3            |  512×512       |  28.8   |   50.0    |   -   |
+| YOLOv3            |  608×608       |  29.7   |   51.7    | [github](https://github.com/yjh0410/PyTorch_YOLOv3/releases/download/yolov3_weight/yolov3_coco.pth) |
 
-<tr><th align="left" bgcolor=#f8f8f8> YOLOv3</th><td bgcolor=white> 608 </td><td bgcolor=white> 33.0 </td><td bgcolor=white> 57.0 </td><td bgcolor=white> 34.4 </td><td bgcolor=white> 18.3 </td><td bgcolor=white> 35.4 </td><td bgcolor=white> 41.9 </td></tr>
-</table></tbody>
+大家可以点击表格中的[github]()来下载模型权重文件。
 
-我们自己的 YOLOv3:
+# 训练模型
+运行下方的命令可开始在```VOC```数据集上进行训练：
+```Shell
+python train.py \
+        --cuda \
+        -d voc \
+        -ms \
+        --batch_size 32 \
+        --lr 0.001 \
+        --max_epoch 200 \
+        --lr_epoch 100 150 \
+```
 
-<table><tbody>
-<tr><th align="left" bgcolor=#f8f8f8> 模型 </th>     <td bgcolor=white> 输入尺寸 </td><td bgcolor=white> AP </td><td bgcolor=white> AP50 </td><td bgcolor=white> AP75 </td><td bgcolor=white> AP_S </td><td bgcolor=white> AP_M </td><td bgcolor=white> AP_L </td></tr>
+# 测试模型
+运行下方的命令可开始在```VOC```数据集上进行训练：
+```Shell
+python test.py \
+        --cuda \
+        -d voc \
+        -size 416 \
+        --weight path/to/weight \
+```
 
-<tr><th align="left" bgcolor=#f8f8f8> YOLOv3</th><td bgcolor=white> 320 </td><td bgcolor=white> 33.1 </td><td bgcolor=white> 54.1 </td><td bgcolor=white> 34.5 </td><td bgcolor=white> 12.1 </td><td bgcolor=white> 34.5 </td><td bgcolor=white> 49.6 </td></tr>
 
-<tr><th align="left" bgcolor=#f8f8f8> YOLOv3</th><td bgcolor=white> 416 </td><td bgcolor=white> 36.0 </td><td bgcolor=white> 57.4 </td><td bgcolor=white> 37.0 </td><td bgcolor=white> 16.3 </td><td bgcolor=white> 37.5 </td><td bgcolor=white> 51.1 </td></tr>
-
-<tr><th align="left" bgcolor=#f8f8f8> YOLOv3</th><td bgcolor=white> 608 </td><td bgcolor=white> 37.6 </td><td bgcolor=white> 59.4 </td><td bgcolor=white> 39.9 </td><td bgcolor=white> 20.4 </td><td bgcolor=white> 39.9 </td><td bgcolor=white> 48.2 </td></tr>
-</table></tbody>
-
-# Model
-
-大家可以从下面的百度网盘链接来下载已训练好的模型：
-
-链接: https://pan.baidu.com/s/1NmdqPwAmirknO5J__lg5Yw 
-
-提起码: hlt6 
-
-进入网盘中后，请点开网盘中的```weights/```文件夹，可以找到我们已训练好的模型权重。
+# 验证模型
+运行下方的命令可开始在```VOC```数据集上进行训练：
+```Shell
+python eval.py \
+        --cuda \
+        -d voc \
+        -size 416 \
+        --weight path/to/weight \
+```

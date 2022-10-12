@@ -3,10 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import os
-import sys
+import os
 
 
-__all__ = ['darknet53']
+model_urls = {
+    "darknet53": "https://github.com/yjh0410/image_classification_pytorch/releases/download/weight/darknet53.pth",
+}
+
+
+__all__ = ['darknet19']
 
 
 class Conv_BN_LeakyReLU(nn.Module):
@@ -72,8 +77,6 @@ class DarkNet_53(nn.Module):
             resblock(1024, nblocks=4)
         )
 
-        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        # self.fc = nn.Linear(1024, num_classes)
 
     def forward(self, x, targets=None):
         c1 = self.layer_1(x)
@@ -82,29 +85,51 @@ class DarkNet_53(nn.Module):
         c4 = self.layer_4(c3)
         c5 = self.layer_5(c4)
 
-        # x = self.avgpool(x)
-        # x = x.view(x.size(0), -1)
-        # x = self.fc(x)
+        output = {
+            'c3': c3,
+            'c4': c4,
+            'c5': c5
+        }
+        return output
 
-        return c3, c4, c5
 
-
-def darknet53(pretrained=False, hr=False, **kwargs):
-    """Constructs a darknet-53 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
+def build_darknet53(pretrained=False):
+    # model
     model = DarkNet_53()
+    feat_dims = [256, 512, 1024]
+
+    # load weight
     if pretrained:
-        print('Loading the pretrained model ...')
-        path_to_dir = os.path.dirname(os.path.abspath(__file__))
-        if hr:
-            print('Loading the hi-res darknet53-448 ...')
-            model_path = path_to_dir + '/weights/darknet53/darknet53_hr_77.76.pth'
-            model.load_state_dict(torch.load(model_path, map_location='cuda'), strict=False)
-        else:
-            print('Loading the darknet53 ...')
-            model_path = path_to_dir + '/weights/darknet53/darknet53_75.42.pth'
-            model.load_state_dict(torch.load(model_path, map_location='cuda'), strict=False)
-    
-    return model
+        print('Loading pretrained weight ...')
+        url = model_urls['darknet53']
+        # checkpoint state dict
+        checkpoint_state_dict = torch.hub.load_state_dict_from_url(
+            url=url, map_location="cpu", check_hash=True)
+        # model state dict
+        model_state_dict = model.state_dict()
+        # check
+        for k in list(checkpoint_state_dict.keys()):
+            if k in model_state_dict:
+                shape_model = tuple(model_state_dict[k].shape)
+                shape_checkpoint = tuple(checkpoint_state_dict[k].shape)
+                if shape_model != shape_checkpoint:
+                    checkpoint_state_dict.pop(k)
+            else:
+                checkpoint_state_dict.pop(k)
+                print(k)
+
+        model.load_state_dict(checkpoint_state_dict)
+
+    return model, feat_dims
+
+
+if __name__ == '__main__':
+    import time
+    model, feats = build_darknet53(pretrained=True)
+    x = torch.randn(1, 3, 224, 224)
+    t0 = time.time()
+    outputs = model(x)
+    t1 = time.time()
+    print('Time: ', t1 - t0)
+    for k in outputs.keys():
+        print(outputs[k].shape)
