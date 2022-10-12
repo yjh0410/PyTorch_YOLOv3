@@ -201,7 +201,7 @@ def train():
 
             # to device
             images = images.to(device)
-            targets = torch.tensor(targets).float().to(device)
+            targets = targets.to(device)
 
             # 前向推理和计算损失
             conf_loss, cls_loss, bbox_loss, total_loss = model(images, targets=targets)
