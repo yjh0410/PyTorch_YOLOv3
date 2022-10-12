@@ -103,7 +103,7 @@ def train():
     if args.multi_scale:
         print('use the multi-scale trick ...')
         train_size = 640
-        val_size = 608
+        val_size = 416
     else:
         train_size = 416
         val_size = 416
