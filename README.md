@@ -64,20 +64,20 @@ VOC2007 test 测试集
 
 | Model             |  Input size  |   mAP   | Weight |
 |-------------------|--------------|---------|--------|
-| YOLOv3            |  320×320     |   73.4  |    -   |
-| YOLOv3            |  416×416     |   77.1  |    -   |
-| YOLOv3            |  512×512     |   78.0  |    -   |
-| YOLOv3            |  608×608     |   78.3  | [github](https://github.com/yjh0410/PyTorch_YOLOv3/releases/download/yolov3_weight/yolov3_voc.pth) |
+| YOLOv3            |  320×320     |  80.1   |    -   |
+| YOLOv3            |  416×416     |  81.5   |    -   |
+| YOLOv3            |  512×512     |  82.3   |    -   |
+| YOLOv3            |  608×608     |  81.3   | [github](https://github.com/yjh0410/PyTorch_YOLOv3/releases/download/yolov3_weight/yolov3_voc.pth) |
 
 
 COCO val 验证集
 
-| Model             |  Input size    |   AP    |   AP50    | Weight|
+| Model             |  Input size    |   AP    |  AP50   | Weight|
 |-------------------|----------------|---------|-----------|-------|
-| YOLOv3            |  320×320       |  24.1   |   42.8    |   -   |
-| YOLOv3            |  416×416       |  27.2   |   47.3    |   -   |
-| YOLOv3            |  512×512       |  28.8   |   50.0    |   -   |
-| YOLOv3            |  608×608       |  29.7   |   51.7    | [github](https://github.com/yjh0410/PyTorch_YOLOv3/releases/download/yolov3_weight/yolov3_coco.pth) |
+| YOLOv3            |  320×320       |  33.7   |  55.2   |   -   |
+| YOLOv3            |  416×416       |  36.3   |  58.1   |   -   |
+| YOLOv3            |  512×512       |  37.8   |  60.0   |   -   |
+| YOLOv3            |  608×608       |  38.2   |  60.5   | [github](https://github.com/yjh0410/PyTorch_YOLOv3/releases/download/yolov3_weight/yolov3_coco.pth) |
 
 大家可以点击表格中的[github]()来下载模型权重文件。
 
@@ -88,10 +88,10 @@ python train.py \
         --cuda \
         -d voc \
         -ms \
-        --batch_size 32 \
+        --batch_size 16 \
         --lr 0.001 \
-        --max_epoch 200 \
-        --lr_epoch 100 150 \
+        --max_epoch 250 \
+        --lr_epoch 150 200 \
 ```
 
 # 测试模型
