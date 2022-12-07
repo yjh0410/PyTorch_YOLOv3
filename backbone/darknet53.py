@@ -27,7 +27,7 @@ class Conv_BN_LeakyReLU(nn.Module):
         return self.convs(x)
 
 
-class resblock(nn.Module):
+class ResBlock(nn.Module):
     def __init__(self, ch, nblocks=1):
         super().__init__()
         self.module_list = nn.ModuleList()
@@ -54,27 +54,27 @@ class DarkNet_53(nn.Module):
         self.layer_1 = nn.Sequential(
             Conv_BN_LeakyReLU(3, 32, k=3, p=1),
             Conv_BN_LeakyReLU(32, 64, k=3, p=1, s=2),
-            resblock(64, nblocks=1)
+            ResBlock(64, nblocks=1)
         )
         # stride = 4
         self.layer_2 = nn.Sequential(
             Conv_BN_LeakyReLU(64, 128, k=3, p=1, s=2),
-            resblock(128, nblocks=2)
+            ResBlock(128, nblocks=2)
         )
         # stride = 8
         self.layer_3 = nn.Sequential(
             Conv_BN_LeakyReLU(128, 256, k=3, p=1, s=2),
-            resblock(256, nblocks=8)
+            ResBlock(256, nblocks=8)
         )
         # stride = 16
         self.layer_4 = nn.Sequential(
             Conv_BN_LeakyReLU(256, 512, k=3, p=1, s=2),
-            resblock(512, nblocks=8)
+            ResBlock(512, nblocks=8)
         )
         # stride = 32
         self.layer_5 = nn.Sequential(
             Conv_BN_LeakyReLU(512, 1024, k=3, p=1, s=2),
-            resblock(1024, nblocks=4)
+            ResBlock(1024, nblocks=4)
         )
 
 
